@@ -1,4 +1,6 @@
 // src/index.js
+// import _ from "lodash";
+import util from "util"; // Для отображения уровня вложенности
 /*-----------------------------------------------------*/
 export const removeFirstLevel = (tree) => {
   if (!Array.isArray(tree))
@@ -42,4 +44,29 @@ const tree = mkdir(
   ],
   { hidden: true },
 );
-console.log(tree);
+// console.log(tree);
+/*-----------------------------------------------------*/
+const treeTwo = mkdir("my documents", [
+  mkfile("avatar.jpg", { size: 100 }),
+  mkfile("passport.jpg", { size: 200 }),
+  mkfile("family.jpg", { size: 150 }),
+  mkfile("addresses", { size: 125 }),
+  mkdir("presentations"),
+]);
+export const compressImages = (tree) => {
+  if (typeof tree !== "object" || tree === null)
+    throw new Error("Tree must be an object!");
+  const children = getChildren(tree);
+  const newChildren = children.map((child) => {
+    if (isFile(child) && child.name.endsWith(".jpg")) {
+      const newMeta = { ...getMeta(child), size: getMeta(child).size / 2 };
+      return mkfile(child.name, newMeta);
+    }
+    // Рекурсивно обрабатываем директории
+    if (isDirectory(child)) return compressImages(child);
+    return child;
+  });
+  return mkdir(getName(tree), newChildren, getMeta(tree));
+};
+// console.log(util.inspect(compressImages(treeTwo), { depth: 5, colors: true }));
+/*-----------------------------------------------------*/
