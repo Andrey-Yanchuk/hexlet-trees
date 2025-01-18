@@ -70,3 +70,73 @@ export const compressImages = (tree) => {
 };
 // console.log(util.inspect(compressImages(treeTwo), { depth: 5, colors: true }));
 /*-----------------------------------------------------*/
+const changeOwner = (tree, owner = "root") => {
+  const name = getName(tree);
+  const newMeta = JSON.parse(JSON.stringify(getMeta(tree))); // Глубокое копирование объектов при помощи JSON объекта, сначала превращаем код в строку, а потом эту строку обратно превращаем в JS(не поддерживает копирование: функций, undefined, symbol и объекты с циклическими ссылками, Не работает с объектами(Map, Set, Date, RegExp), в таком случае лучше использовать _.cloneDepp или аналоги)
+  newMeta.owner = owner;
+  if (isFile(tree)) {
+    return mkfile(name, newMeta);
+  }
+  const children = getChildren(tree);
+  const newChildren = children.map((child) => changeOwner(child, owner));
+  return mkdir(name, newChildren, newMeta);
+};
+const treeOwner = mkdir("/", [
+  mkdir(
+    "etc",
+    [
+      mkfile("bashrc", { owner: "Oleg" }),
+      mkfile("consul.cfg", { owner: "Oleg" }),
+    ],
+    { owner: "Oleg" },
+  ),
+  mkfile("hexletrc", { owner: "Dmitriy" }),
+  mkdir(
+    "bin",
+    [
+      mkfile("ls", { owner: "Alexey" }),
+      mkfile("cat", { owner: "Alexey" }),
+      mkdir(
+        "users",
+        [
+          mkdir(
+            "Anton-user",
+            [
+              mkfile("Anton-file--1", { owner: "Anton" }),
+              mkfile("Anton-file--2", { owner: "Anton" }),
+            ],
+            { owner: "Anton" },
+          ),
+          mkdir(
+            "Olesya-user",
+            [
+              mkfile("Olesya-file--1", { owner: "Olesya" }),
+              mkfile("Olesya-file--2", { owner: "Olesya" }),
+            ],
+            { owner: "Olesya" },
+          ),
+        ],
+        { owner: "Oleg" },
+      ),
+    ],
+    { owner: "Alexey" },
+  ),
+]);
+// console.log(util.inspect(changeOwner(treeOwner, "Andrey"), { depth: 5, colors: true }));
+/*-----------------------------------------------------*/
+export const downcaseFileNames = (tree) => {
+  const newName = isFile(tree) ? getName(tree).toLowerCase() : getName(tree);
+  const newMeta = JSON.parse(JSON.stringify(getMeta(tree)));
+  if (isFile(tree)) {
+    return mkfile(newName, newMeta);
+  }
+  const children = getChildren(tree);
+  const newChildren = children.map((child) => downcaseFileNames(child));
+  return mkdir(newName, newChildren, newMeta);
+};
+const treeDownCase = mkdir("/", [
+  mkdir("eTc", [mkdir("NgiNx"), mkdir("CONSUL", [mkfile("config.json")])]),
+  mkfile("hOsts"),
+]);
+// console.log(util.inspect(downcaseFileNames(treeDownCase), { depth: 7, colors: true }));
+/*-----------------------------------------------------*/
