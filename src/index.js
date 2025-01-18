@@ -28,7 +28,7 @@ export const getChildren = (node) => node.children;
 export const getMeta = (node) => node.meta;
 export const isDirectory = (node) => node.type === "directory";
 export const isFile = (node) => node.type === "file";
-const tree = mkdir(
+/* const tree = mkdir(
   "nodejs-package",
   [
     mkfile("Makefile"),
@@ -44,15 +44,8 @@ const tree = mkdir(
   ],
   { hidden: true },
 );
-// console.log(tree);
+console.log(tree); */
 /*-----------------------------------------------------*/
-const treeTwo = mkdir("my documents", [
-  mkfile("avatar.jpg", { size: 100 }),
-  mkfile("passport.jpg", { size: 200 }),
-  mkfile("family.jpg", { size: 150 }),
-  mkfile("addresses", { size: 125 }),
-  mkdir("presentations"),
-]);
 export const compressImages = (tree) => {
   if (typeof tree !== "object" || tree === null)
     throw new Error("Tree must be an object!");
@@ -68,20 +61,25 @@ export const compressImages = (tree) => {
   });
   return mkdir(getName(tree), newChildren, getMeta(tree));
 };
-// console.log(util.inspect(compressImages(treeTwo), { depth: 5, colors: true }));
+/* const treeTwo = mkdir("my documents", [
+  mkfile("avatar.jpg", { size: 100 }),
+  mkfile("passport.jpg", { size: 200 }),
+  mkfile("family.jpg", { size: 150 }),
+  mkfile("addresses", { size: 125 }),
+  mkdir("presentations"),
+]);
+console.log(util.inspect(compressImages(treeTwo), { depth: 5, colors: true })); */
 /*-----------------------------------------------------*/
-const changeOwner = (tree, owner = "root") => {
+export const changeOwner = (tree, owner = "root") => {
   const name = getName(tree);
   const newMeta = JSON.parse(JSON.stringify(getMeta(tree))); // Глубокое копирование объектов при помощи JSON объекта, сначала превращаем код в строку, а потом эту строку обратно превращаем в JS(не поддерживает копирование: функций, undefined, symbol и объекты с циклическими ссылками, Не работает с объектами(Map, Set, Date, RegExp), в таком случае лучше использовать _.cloneDepp или аналоги)
   newMeta.owner = owner;
-  if (isFile(tree)) {
-    return mkfile(name, newMeta);
-  }
+  if (isFile(tree)) return mkfile(name, newMeta);
   const children = getChildren(tree);
   const newChildren = children.map((child) => changeOwner(child, owner));
   return mkdir(name, newChildren, newMeta);
 };
-const treeOwner = mkdir("/", [
+/* const treeOwner = mkdir("/", [
   mkdir(
     "etc",
     [
@@ -122,21 +120,39 @@ const treeOwner = mkdir("/", [
     { owner: "Alexey" },
   ),
 ]);
-// console.log(util.inspect(changeOwner(treeOwner, "Andrey"), { depth: 5, colors: true }));
+console.log(util.inspect(changeOwner(treeOwner, "Andrey"), { depth: 5, colors: true })); */
 /*-----------------------------------------------------*/
 export const downcaseFileNames = (tree) => {
   const newName = isFile(tree) ? getName(tree).toLowerCase() : getName(tree);
   const newMeta = JSON.parse(JSON.stringify(getMeta(tree)));
-  if (isFile(tree)) {
-    return mkfile(newName, newMeta);
-  }
+  if (isFile(tree)) return mkfile(newName, newMeta);
   const children = getChildren(tree);
   const newChildren = children.map((child) => downcaseFileNames(child));
   return mkdir(newName, newChildren, newMeta);
 };
-const treeDownCase = mkdir("/", [
+/* const treeDownCase = mkdir("/", [
   mkdir("eTc", [mkdir("NgiNx"), mkdir("CONSUL", [mkfile("config.json")])]),
   mkfile("hOsts"),
 ]);
-// console.log(util.inspect(downcaseFileNames(treeDownCase), { depth: 7, colors: true }));
+console.log(util.inspect(downcaseFileNames(treeDownCase), { depth: 7, colors: true })); */
+/*-----------------------------------------------------*/
+export const getHiddenFilesCount = (tree) => {
+  if (isFile(tree) && getName(tree).startsWith(".")) return 1;
+  const children = getChildren(tree) || [];
+  return children.reduce((acc, child) => acc + getHiddenFilesCount(child), 0);
+};
+const treeGetHidden = mkdir("/", [
+  mkdir("etc", [
+    mkdir("apache"),
+    mkdir("nginx", [mkfile(".nginx.conf", { size: 800 })]),
+    mkdir(".consul", [
+      mkfile(".config.json", { size: 1200 }),
+      mkfile("data", { size: 8200 }),
+      mkfile("raft", { size: 80 }),
+    ]),
+  ]),
+  mkfile(".hosts", { size: 3500 }),
+  mkfile("resolve", { size: 1000 }),
+]);
+// console.log(getHiddenFilesCount(treeGetHidden));
 /*-----------------------------------------------------*/
