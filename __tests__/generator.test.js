@@ -38,7 +38,7 @@ describe("Testing the function mkdir", () => {
   test("throws error for invalid children", () => {
     expect(() => mkdir("root directory", "I'm string")).toThrow(
       "Children must be an array!",
-    );
+    ); // Отложенный вызов функции на момент проверки тестов
   });
   test("throws error for invalid meta", () => {
     expect(() => mkdir("root directory", [], null)).toThrow(
