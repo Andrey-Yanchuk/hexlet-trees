@@ -2,7 +2,7 @@
 import { removeFirstLevel } from "../src/index.js";
 /*-----------------------------------------------------*/
 describe("Testing the function removeFirstLevel", () => {
-  test("correct values with the first level of nesting ", () => {
+  test("correct values with the first level of nesting", () => {
     expect(removeFirstLevel([[5], 1, [3, 4]])).toEqual([5, 3, 4]);
   });
   test("correct values with the second level of nesting ", () => {
